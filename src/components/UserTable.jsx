@@ -13,7 +13,6 @@ import {
   getCoreRowModel,
   useReactTable,
   getSortedRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
@@ -28,8 +27,10 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-const fetchUsers = async () => {
-  const response = await fetch('https://jsonplaceholder.typicode.com/users');
+const fetchUsers = async ({ queryKey }) => {
+  const [_, filters] = queryKey;
+  const params = new URLSearchParams(filters);
+  const response = await fetch(`https://jsonplaceholder.typicode.com/users?${params}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
@@ -116,9 +117,9 @@ const columns = [
 ];
 
 const UserTable = () => {
-  const [columnFilters, setColumnFilters] = useState([]);
+  const [filters, setFilters] = useState({});
   const { data: users, isLoading, isError } = useQuery({
-    queryKey: ["users"],
+    queryKey: ["users", filters],
     queryFn: fetchUsers,
   });
 
@@ -127,11 +128,18 @@ const UserTable = () => {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onColumnFiltersChange: setColumnFilters,
+    onColumnFiltersChange: (columnFilters) => {
+      const newFilters = columnFilters.reduce((acc, filter) => {
+        if (filter.value) {
+          acc[filter.id] = filter.value;
+        }
+        return acc;
+      }, {});
+      setFilters(newFilters);
+    },
     state: {
-      columnFilters,
+      columnFilters: Object.entries(filters).map(([id, value]) => ({ id, value })),
     },
     initialState: {
       pagination: {
