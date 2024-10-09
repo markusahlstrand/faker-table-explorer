@@ -14,10 +14,19 @@ import {
   useReactTable,
   getSortedRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const fetchUsers = async () => {
   const response = await fetch('https://jsonplaceholder.typicode.com/users');
@@ -30,8 +39,8 @@ const fetchUsers = async () => {
 const columns = [
   {
     accessorKey: "name",
-    header: ({ column }) => {
-      return (
+    header: ({ column }) => (
+      <div>
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -39,13 +48,18 @@ const columns = [
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
-    },
+        <Input
+          placeholder="Filter name..."
+          onChange={(event) => column.setFilterValue(event.target.value)}
+          className="max-w-sm mt-2"
+        />
+      </div>
+    ),
   },
   {
     accessorKey: "email",
-    header: ({ column }) => {
-      return (
+    header: ({ column }) => (
+      <div>
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -53,13 +67,18 @@ const columns = [
           Email
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
-    },
+        <Input
+          placeholder="Filter email..."
+          onChange={(event) => column.setFilterValue(event.target.value)}
+          className="max-w-sm mt-2"
+        />
+      </div>
+    ),
   },
   {
     accessorKey: "phone",
-    header: ({ column }) => {
-      return (
+    header: ({ column }) => (
+      <div>
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -67,13 +86,18 @@ const columns = [
           Phone
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
-    },
+        <Input
+          placeholder="Filter phone..."
+          onChange={(event) => column.setFilterValue(event.target.value)}
+          className="max-w-sm mt-2"
+        />
+      </div>
+    ),
   },
   {
     accessorKey: "company.name",
-    header: ({ column }) => {
-      return (
+    header: ({ column }) => (
+      <div>
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -81,8 +105,13 @@ const columns = [
           Company
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
-    },
+        <Input
+          placeholder="Filter company..."
+          onChange={(event) => column.setFilterValue(event.target.value)}
+          className="max-w-sm mt-2"
+        />
+      </div>
+    ),
   },
 ];
 
@@ -99,9 +128,15 @@ const UserTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     onColumnFiltersChange: setColumnFilters,
     state: {
       columnFilters,
+    },
+    initialState: {
+      pagination: {
+        pageSize: 5,
+      },
     },
   });
 
@@ -110,16 +145,6 @@ const UserTable = () => {
 
   return (
     <div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter names..."
-          value={(table.getColumn("name")?.getFilterValue()) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -161,6 +186,36 @@ const UserTable = () => {
             )}
           </TableBody>
         </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              />
+            </PaginationItem>
+            {Array.from({ length: table.getPageCount() }, (_, i) => i + 1).map(
+              (page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    onClick={() => table.setPageIndex(page - 1)}
+                    isActive={table.getState().pagination.pageIndex === page - 1}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              )
+            )}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );
