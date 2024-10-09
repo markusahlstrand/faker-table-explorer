@@ -49,10 +49,16 @@ const UserTable = () => {
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onColumnFiltersChange: (columnFilters) => {
-      const newFilters = Object.fromEntries(
-        columnFilters.map((filter) => [filter.id, filter.value])
-      );
-      setFilters(newFilters);
+      // Check if columnFilters is an array before using map
+      if (Array.isArray(columnFilters)) {
+        const newFilters = Object.fromEntries(
+          columnFilters.map((filter) => [filter.id, filter.value])
+        );
+        setFilters(newFilters);
+      } else if (typeof columnFilters === 'object') {
+        // If it's an object, we can use it directly
+        setFilters(columnFilters);
+      }
     },
     state: {
       columnFilters: Object.entries(filters).map(([id, value]) => ({ id, value })),
