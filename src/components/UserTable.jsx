@@ -15,9 +15,6 @@ import {
   getSortedRowModel,
   getPaginationRowModel,
 } from "@tanstack/react-table";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ArrowUpDown } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -26,6 +23,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { columns } from "./UserTableColumns";
 
 const fetchUsers = async ({ queryKey }) => {
   const [_, filters] = queryKey;
@@ -36,85 +34,6 @@ const fetchUsers = async ({ queryKey }) => {
   }
   return response.json();
 };
-
-const columns = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <div>
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-        <Input
-          placeholder="Filter name..."
-          onChange={(event) => column.setFilterValue(event.target.value)}
-          className="max-w-sm mt-2"
-        />
-      </div>
-    ),
-  },
-  {
-    accessorKey: "email",
-    header: ({ column }) => (
-      <div>
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-        <Input
-          placeholder="Filter email..."
-          onChange={(event) => column.setFilterValue(event.target.value)}
-          className="max-w-sm mt-2"
-        />
-      </div>
-    ),
-  },
-  {
-    accessorKey: "phone",
-    header: ({ column }) => (
-      <div>
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Phone
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-        <Input
-          placeholder="Filter phone..."
-          onChange={(event) => column.setFilterValue(event.target.value)}
-          className="max-w-sm mt-2"
-        />
-      </div>
-    ),
-  },
-  {
-    accessorKey: "company.name",
-    header: ({ column }) => (
-      <div>
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Company
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-        <Input
-          placeholder="Filter company..."
-          onChange={(event) => column.setFilterValue(event.target.value)}
-          className="max-w-sm mt-2"
-        />
-      </div>
-    ),
-  },
-];
 
 const UserTable = () => {
   const [filters, setFilters] = useState({});
@@ -130,12 +49,9 @@ const UserTable = () => {
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onColumnFiltersChange: (columnFilters) => {
-      const newFilters = columnFilters.reduce((acc, filter) => {
-        if (filter.value) {
-          acc[filter.id] = filter.value;
-        }
-        return acc;
-      }, {});
+      const newFilters = Object.fromEntries(
+        columnFilters.map((filter) => [filter.id, filter.value])
+      );
       setFilters(newFilters);
     },
     state: {
